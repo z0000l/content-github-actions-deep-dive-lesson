@@ -6,13 +6,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out code
+      - name: Check out Code
         uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install libraries
+      - name: Install Libraries
         run: pip install flake8
       - name: Lint with flake8
         run: |
@@ -24,22 +24,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint
     steps:
-      - name: Check out code
+      - name: Check out Code
         uses: actions/checkout@v2
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install libraries
+      - name: Install Libraries
         run: |
           cd function
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt -t .; fi
-      - name: Zip bundle
+      - name: Zip Bundle
         run: |
           cd function
           zip -r ../${{ github.sha }}.zip .
-      - name: Archive artifact
+      - name: Archive Artifact
         uses: actions/upload-artifact@v2
         with:
           name: zipped-bundle
@@ -49,21 +49,21 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
-      - name: Test file name
-        run: |
-          ls
-          echo ${{ github.sha }}.zip
-#      - name: Create release
-#        uses: softprops/action-gh-release@v0.1.15
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.github_token }}
-#        with:
-#          tag_name: ${{ github.run_number }}
-#          name: Release from ${{ github.run_number }}
-#          body: |
-#            New release for ${{ github.sha }}.
-#            Release notes on the documentation site.
-#          draft: false
-#          prerelease: false
-#          files: ./${{ github.sha }}.zip
-
+      - name: Download a Build Artifact
+        uses: actions/download-artifact@v2.1.1
+        with:
+          name: zipped-bundle
+          path: .
+      - name: Create Release
+        uses: softprops/action-gh-release@v0.1.15
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+        with:
+          tag_name: ${{ github.run_number }}
+          name: Release from ${{ github.run_number }}
+          body: |
+            New release for ${{ github.sha }}.
+            Release notes on the documentation site.
+          draft: false
+          prerelease: false
+          files: ./${{ github.sha }}.zip
