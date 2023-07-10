@@ -47,6 +47,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - name: Create release
         uses: ncipollo/release-action@v1.12.0
