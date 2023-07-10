@@ -50,14 +50,16 @@ jobs:
     permissions: write-all
     steps:
       - name: Create release
-        uses: ncipollo/release-action@v1.12.0
+        uses: softprops/action-gh-release@v0.1.15
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
         with:
-          tag: ${{ github.run_number }}
+          tag_name: ${{ github.run_number }}
           name: Release from ${{ github.run_number }}
           body: |
             New release for ${{ github.sha }}.
             Release notes on the documentation site.
           draft: false
           prerelease: false
+          files: ./${{ github.sha }}.zip
+
