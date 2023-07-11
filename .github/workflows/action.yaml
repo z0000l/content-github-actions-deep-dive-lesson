@@ -1,5 +1,4 @@
 name: Deploy my Lambda Function
-
 on:
   push:
     branches:
@@ -120,6 +119,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     needs: deploy
+    permissions: write-all
     steps:
       - name: Check out code
         uses: actions/checkout@v2
