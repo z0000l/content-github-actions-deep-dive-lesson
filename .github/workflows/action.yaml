@@ -66,24 +66,6 @@ jobs:
       - name: Upload to S3
         run: aws s3 cp ${{ github.sha }}.zip s3://my-bucket-dmaslkdajjj/${{ github.sha }}.zip
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: upload
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Update function code
-        run: |
-          aws lambda update-function-code \
-            --function-name my-function \
-            --s3-bucket my-bucket-dmaslkdajjj \
-            --s3-key ${{ github.sha }}.zip \
-            --publish
-
   test:
     runs-on: ubuntu-latest
     needs: upload
@@ -98,12 +80,28 @@ jobs:
         run: echo ${{ secrets.AWS_ACCOUNT_ID }}
       - name: Create Test Function
         run: |
-          aws lambda create-function --function-name test-function \  
-            --code S3Bucket=my-bucket-dmaslkdajjj,S3Key=${{ github.sha }}.zip \  
-            --handler lambda_function.lambda_handler --runtime python3.8
-            --role arn:aws:iam::593626306105:role/my-lambda-role
+          aws lambda create-function --function-name test-function --code S3Bucket=my-bucket-dmaslkdajjj,S3Key=${{ github.sha }}.zip --handler lambda_function.lambda_handler --runtime python3.8 --role arn:aws:iam::593626306105:role/my-lambda-role
       - name: Wait 30 Seconds
         run: sleep 30
       - name: Destroy Test Function
         if: ${{ always() }}
         run: aws lambda delete-function --function-name test-function
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Update function code
+        run: |
+          aws lambda update-function-code \
+            --function-name my-function \
+            --s3-bucket my-bucket-dmaslkdajjj \
+            --s3-key ${{ github.sha }}.zip \
+            --publish
